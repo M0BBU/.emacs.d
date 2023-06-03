@@ -32,11 +32,6 @@
 
 (setq ring-bell-function 'ignore)
 
-;; Absolutely speedy and magical autocomplete
-(setq ido-enable-flex-matching t)
-(setq ido-everywhere t)
-(ido-mode 1)
-
 (delete-selection-mode +1)
 
 ;; Package manager and org mode?
@@ -69,7 +64,6 @@
 ;; Scrolls one line without moving cursor
 (global-set-key (kbd "M-n") #'scroll-up-line)
 (global-set-key (kbd "M-p") #'scroll-down-line)
-
 
 ;; cc-mode defaults
 (setq c-default-style "stroustrup")
@@ -105,6 +99,8 @@
   (package-install 'markdown-mode)
   (package-install 'cuda-mode)
   (package-install 'projectile)
+  (package-install 'flx-ido)
+  (package-install 'go-mode)
   )
 
 ;; Color scheme
@@ -145,6 +141,15 @@
   ;; enabled right away. Note that this forces loading the package.
   (marginalia-mode))
 
+;; Better matching
+(require 'flx-ido)
+(ido-mode 1)
+(ido-everywhere 1)
+(flx-ido-mode 1)
+;; disable ido faces to see flx highlights.
+(setq ido-enable-flex-matching t)
+(setq ido-use-faces nil)
+
 (use-package tramp
   :config
   (setq tramp-default-method "ssh")
@@ -158,7 +163,7 @@
 (projectile-mode +1)
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
-(defun CAEN-connect ()
+(defun CAEN-connect()
   "Connect to CAEN as long as you have an open ssh connection to CAEN"
   (interactive)
   (find-file "/ssh:dchoo@login.engin.umich.edu:"))
@@ -182,6 +187,22 @@
 (setq TeX-electric-math (cons "$" "$"))
 (setq TeX-electric-sub-and-superscript t)
 
+(require 'ansi-color)
+(defun endless/colorize-compilation ()
+  "Colorize from `compilation-filter-start' to `point'."
+  (let ((inhibit-read-only t))
+    (ansi-color-apply-on-region
+     compilation-filter-start (point))))
+
+(add-hook 'compilation-filter-hook
+          #'endless/colorize-compilation)
+
+
+;; Load in CMake mode
+;; Change to proper path
+(setq load-path (cons (expand-file-name "/opt/homebrew/Cellar/cmake/3.26.3/share/emacs/site-lisp/cmake") load-path))
+(require 'cmake-mode)
+
 ;; EOF
 
 (custom-set-variables
@@ -190,7 +211,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(marginalia realgud-lldb realgud pdf-tools orderless vertico haskell-mode magit rust-mode ## auctex zenburn-theme use-package)))
+   '(cuda-mode flx-ido go-mode marginalia realgud-lldb realgud pdf-tools orderless vertico haskell-mode magit rust-mode ## auctex zenburn-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
