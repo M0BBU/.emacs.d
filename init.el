@@ -24,6 +24,9 @@
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
 
+;; Nice colorscheme
+(load-theme 'modus-operandi-tinted :no-confirm)
+
 ;; Some nice defaults
 (setq
  ;; No GNU message.
@@ -84,11 +87,6 @@
  create-lockfiles nil
  )
 
-;; Nice colorscheme.
-(add-to-list 'load-path "~/.emacs.d/modus-themes")
-(require 'modus-themes)
-(load-theme 'modus-operandi-tinted :no-confirm)
-
 ;; Get rid of trailing whitespace
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
 (setq require-final-newline t)
@@ -120,11 +118,10 @@
   :straight t)
 (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
 
-
 ;; cc-mode defaults
 (setq c-default-style "stroustrup")
 (add-hook 'c++-mode-hook (lambda nil (setq c-basic-offset 4)))
 
 ;; cmake-mode :]
-(setq load-path (cons (expand-file-name "/opt/homebrew/Cellar/cmake/3.27.1/share/emacs/site-lisp/cmake") load-path))
+(setq load-path (cons (expand-file-name "/opt/homebrew/Cellar/cmake/3.27.4/share/emacs/site-lisp/cmake") load-path))
 (require 'cmake-mode)
