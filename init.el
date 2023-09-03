@@ -78,7 +78,7 @@
 (global-display-fill-column-indicator-mode t)
 
 ;; Nice font
-(set-face-attribute 'default nil :font "Menlo 16")
+(set-face-attribute 'default nil :font "Menlo 17")
 
 ;; Get rid of backups and autosaves
 (setq
@@ -100,6 +100,7 @@
 ;; Let straight be the package manager for use-package :]
 (straight-use-package 'use-package)
 
+;; All my packages and configurations!
 (use-package magit
   :straight t
   :diminish magit-auto-revert-mode
@@ -114,9 +115,39 @@
 (use-package go-mode
   :straight t)
 
+(use-package rust-mode
+  :straight t
+  :mode ("\\.rs\\'" . rust-mode)
+  :config
+  (add-hook 'rust-mode-hook
+            (lambda () (setq indent-tabs-mode nil)))
+)
+
 (use-package dumb-jump
   :straight t)
 (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+
+(use-package pdf-tools
+  :straight t)
+
+(use-package tex
+  :straight auctex
+  :config
+  (setq TeX-electric-sub-and-superscript t)
+  (setq TeX-electric-math (cons "$" "$"))
+  ;; Let PDF tools be our default viewwer
+  (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
+        TeX-source-correlate-start-server t)
+  ;; This makes PDF tools refresh after compilation :)
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer))
+
+;; org mode stuff
+(use-package org
+  :config
+  (setq org-log-done t)
+  (setq org-agenda-files (list "~/org/school/todo.org"))
+  (define-key global-map "\C-ca" 'org-agenda))
+
 
 ;; cc-mode defaults
 (setq c-default-style "stroustrup")
