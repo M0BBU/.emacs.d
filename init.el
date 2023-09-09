@@ -24,6 +24,9 @@
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
 
+;; Smooth scrolling
+(pixel-scroll-precision-mode)
+
 ;; Nice colorscheme
 (load-theme 'modus-operandi-tinted :no-confirm)
 
@@ -48,6 +51,9 @@
  ;; Make opt key do Super.
  mac-option-modifier 'super
  )
+
+;; Highlight the current line I'm on
+(global-hl-line-mode 1)
 
 ;; Maximize window on startup!
 (add-hook 'window-setup-hook 'toggle-frame-maximized t)
@@ -78,7 +84,7 @@
 (global-display-fill-column-indicator-mode t)
 
 ;; Nice font
-(set-face-attribute 'default nil :font "Menlo 17")
+(set-face-attribute 'default nil :font "Iosevka 17")
 
 ;; Get rid of backups and autosaves
 (setq
@@ -106,12 +112,6 @@
   :diminish magit-auto-revert-mode
   :diminish auto-revert-mode)
 
-(use-package undo-tree
-  :straight t
-  :bind (("C-c _" . undo-tree-visualize))
-  :config
-  (global-undo-tree-mode +1))
-
 (use-package go-mode
   :straight t)
 
@@ -120,12 +120,16 @@
   :mode ("\\.rs\\'" . rust-mode)
   :config
   (add-hook 'rust-mode-hook
-            (lambda () (setq indent-tabs-mode nil)))
-)
+            (lambda () (setq indent-tabs-mode nil))))
 
 (use-package dumb-jump
   :straight t)
 (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+
+(use-package which-key
+  :straight t
+  :config
+  (which-key-mode))
 
 (use-package pdf-tools
   :straight t)
@@ -146,8 +150,32 @@
   :config
   (setq org-log-done t)
   (setq org-agenda-files (list "~/org/school/todo.org"))
-  (define-key global-map "\C-ca" 'org-agenda))
+  (define-key global-map "\C-c a" 'org-agenda))
 
+(use-package corfu
+  :straight t
+  :custom
+  (corfu-auto t)
+  :config
+  (setq-local corfu-auto-delay 0.75
+              completion-styles '(basic))
+  :bind
+  (:map corfu-map
+        ("TAB" . corfu-next)
+        ([tab] . corfu-next)
+        ("S-TAB" . corfu-previous)
+        ([backtab] . corfu-previous))
+  :init)
+
+(use-package popper
+  :straight t
+  :init
+  (setq popper-reference-buffers
+        '("\\*Messages\\*"
+          "Output\\*$"
+          "\\*Async Shell Command\\*"
+          help-mode
+          compilation-mode)))
 
 ;; cc-mode defaults
 (setq c-default-style "stroustrup")
