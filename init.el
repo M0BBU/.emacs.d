@@ -1,8 +1,5 @@
 ;; -*- coding: utf-8; lexical-binding: t -*-
 
-;; Increase garbage collection threshold for faster start up time.
-(setq gc-cons-threshold 100000000)
-
 ;; Bootstrap straight package manager. I find that straight usually
 ;; works better if I need to setup emacs of a different machine.
 (defvar bootstrap-version)
@@ -143,14 +140,12 @@
   (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
         TeX-source-correlate-start-server t)
   ;; This makes PDF tools refresh after compilation :)
-  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer))
-
-;; org mode stuff
-(use-package org
-  :config
-  (setq org-log-done t)
-  (setq org-agenda-files (list "~/org/school/todo.org"))
-  (define-key global-map "\C-c a" 'org-agenda))
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+  ;; Automatically close pairs for me
+  (add-hook 'LaTeX-mode-hook #'electric-pair-mode)
+  ;; Automatically break lines at the 80 char limit
+  (add-hook 'LaTeX-mode-hook #'auto-fill-mode)
+  (add-hook 'LaTeX-mode-hook #'flyspell-mode))
 
 (use-package corfu
   :straight t
@@ -167,15 +162,22 @@
         ([backtab] . corfu-previous))
   :init)
 
+(use-package consult
+  :straight t)
+
 (use-package popper
   :straight t
+  :bind (("C-`"   . popper-toggle)
+         ("M-`"   . popper-cycle))
   :init
   (setq popper-reference-buffers
         '("\\*Messages\\*"
           "Output\\*$"
           "\\*Async Shell Command\\*"
           help-mode
-          compilation-mode)))
+          compilation-mode))
+  (popper-mode +1)
+  (popper-echo-mode +1))
 
 ;; cc-mode defaults
 (setq c-default-style "stroustrup")
