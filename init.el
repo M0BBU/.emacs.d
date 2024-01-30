@@ -15,6 +15,7 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+
 ;; Get rid of top ui for more screen space.
 (tooltip-mode -1)
 (tool-bar-mode -1)
@@ -25,7 +26,8 @@
 (pixel-scroll-precision-mode)
 
 ;; Nice colorscheme
-(load-theme 'modus-operandi-tinted :no-confirm)
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
+(load-theme 'zenburn t)
 
 ;; Some nice defaults
 (setq
@@ -131,6 +133,7 @@
 (use-package pdf-tools
   :straight t)
 
+
 (use-package tex
   :straight auctex
   :config
@@ -178,6 +181,20 @@
           compilation-mode))
   (popper-mode +1)
   (popper-echo-mode +1))
+
+(use-package org
+  :straight t
+  :config
+  (setq org-log-done t)
+  (setq org-agenda-files (list "~/org/school/todo.org")))
+
+(use-package haskell-mode
+  :straight t)
+
+(use-package eglot
+  :config
+  ;; Inlay hints make me lose my mind with rust analyzer
+  (setq-default eglot-inlay-hints-mode nil))
 
 ;; cc-mode defaults
 (setq c-default-style "stroustrup")
