@@ -15,6 +15,9 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+;; No more quitting emacs on accident!!
+(keymap-global-unset "C-x C-c")
+
 
 ;; Get rid of top ui for more screen space.
 (tooltip-mode -1)
