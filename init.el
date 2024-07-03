@@ -1,7 +1,6 @@
-;; -*- coding: utf-8; lexical-binding: t -*-
-
-;; Bootstrap straight package manager. I find that straight usually
-;; works better if I need to setup emacs of a different machine.
+;; Bootstrap straight package manager. The straight
+;; package manager usually works better if I'm setting
+;; up emacs on a new machine :)
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -15,9 +14,6 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-;; No more quitting emacs on accident!!
-(keymap-global-unset "C-x C-c")
-
 
 ;; Get rid of top ui for more screen space.
 (tooltip-mode -1)
@@ -28,9 +24,11 @@
 ;; Smooth scrolling
 (pixel-scroll-precision-mode)
 
-;; Nice colorscheme
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-(load-theme 'zenburn t)
+;; Sets M-o to switch windows
+(global-set-key "\M-o" 'other-window)
+
+(column-number-mode)
+(display-time-mode)
 
 ;; Some nice defaults
 (setq
@@ -51,14 +49,13 @@
  ;; Command == Meta to save my fingers.
  mac-command-modifier 'meta
  ;; Make opt key do Super.
- mac-option-modifier 'super
- )
-
-;; Highlight the current line I'm on
-(global-hl-line-mode 1)
+ mac-option-modifier 'super)
 
 ;; Maximize window on startup!
 (add-hook 'window-setup-hook 'toggle-frame-maximized t)
+
+;; Lets you highlight and delete
+(delete-selection-mode t)
 
 ;; Accept `y` or `n` instead of yes or no.
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -69,31 +66,9 @@
 ;; I like 4-char indents :]
 (setq-default tab-width 4)
 
-;; Sets M-o to switch windows
-(global-set-key "\M-o" 'other-window)
-
-;; Turn on some modes for modern niceties
-(delete-selection-mode t)
-(global-display-line-numbers-mode t)
-(column-number-mode)
-
 ;; Scrolls one line without moving cursor
 (global-set-key (kbd "M-n") #'scroll-up-line)
 (global-set-key (kbd "M-p") #'scroll-down-line)
-
-;; 80 column rule
-(setq-default fill-column 80)
-(global-display-fill-column-indicator-mode t)
-
-;; Nice font
-(set-face-attribute 'default nil :font "Iosevka 17")
-
-;; Get rid of backups and autosaves
-(setq
- make-backup-files nil
- auto-save-default nil
- create-lockfiles nil
- )
 
 ;; Get rid of trailing whitespace
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
@@ -105,104 +80,175 @@
 (ido-mode 1)
 (fido-vertical-mode t)
 
+;; Control font size?
+(set-face-attribute 'default nil :height 170)
+
+;; Get rid of backups and autosaves
+(setq
+ make-backup-files nil
+ auto-save-default nil
+ create-lockfiles nil)
+
 ;; Let straight be the package manager for use-package :]
 (straight-use-package 'use-package)
 
-;; All my packages and configurations!
-(use-package magit
-  :straight t
-  :diminish magit-auto-revert-mode
-  :diminish auto-revert-mode)
+;; use setq-default to set it for /all/ modes
+(setq-default mode-line-format
+              (list
+               "λ> "
 
-(use-package go-mode
-  :straight t)
+               ;; the buffer name; the file name as a tool tip
+               '(:eval (propertize "%b " 'face 'font-lock-keyword-face
+                                   'help-echo (buffer-file-name)))
+
+               ;; line and column
+               "(" ;; '%02' to set to 2 chars at least; prevents flickering
+               (propertize "%02l" 'face 'font-lock-type-face) ","
+               (propertize "%02c" 'face 'font-lock-type-face)
+               ") "
+
+               ;; relative position, size of file
+               "["
+               (propertize "%p" 'face 'font-lock-constant-face) ;; % above top
+               "] "
+
+               ;; the current major mode for the buffer.
+               "["
+
+               '(:eval (propertize "%m" 'face 'font-lock-string-face
+                                   'help-echo buffer-file-coding-system))
+               "] "
+
+
+               "[" ;; insert vs overwrite mode, input-method in a tooltip
+               '(:eval (propertize (if overwrite-mode "Ovr" "Ins")
+                                   'face 'font-lock-preprocessor-face
+                                   'help-echo (concat "Buffer is in "
+                                                      (if overwrite-mode "overwrite" "insert") " mode")))
+
+               ;; was this buffer modified since the last save?
+               '(:eval (when (buffer-modified-p)
+                         (concat ","  (propertize "Mod"
+                                                  'face 'font-lock-warning-face
+                                                  'help-echo "Buffer has been modified"))))
+
+               ;; is this buffer read-only?
+               '(:eval (when buffer-read-only
+                         (concat ","  (propertize "RO"
+                                                  'face 'font-lock-type-face
+                                                  'help-echo "Buffer is read-only"))))
+               "] "
+
+               ;; add the time, with the date and the emacs uptime in the tooltip
+               '(:eval (propertize (format-time-string "%H:%M")
+                                   'help-echo
+                                   (concat (format-time-string "%c; ")
+                                           (emacs-uptime "Uptime:%hh"))))
+               ))
+
+
+;; colorize output in compile buffer
+(require 'ansi-color)
+(defun colorize-compilation-buffer ()
+  (ansi-color-apply-on-region compilation-filter-start (point-max)))
+(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+
+(use-package modus-themes
+  :straight t
+  :config
+  (setq modus-themes-common-palette-overrides
+        '((border-mode-line-active unspecified)
+          (border-mode-line-inactive unspecified)))
+
+  (setq modus-vivendi-tinted-palette-overrides
+        '((bg-main "#181818")))
+
+  (load-theme 'modus-vivendi-tinted t))
 
 (use-package rust-mode
-  :straight t
-  :mode ("\\.rs\\'" . rust-mode)
-  :config
-  (add-hook 'rust-mode-hook
-            (lambda () (setq indent-tabs-mode nil))))
-
-(use-package dumb-jump
-  :straight t)
-(add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
-
-(use-package which-key
-  :straight t
-  :config
-  (which-key-mode))
-
-(use-package pdf-tools
   :straight t)
 
-
-(use-package tex
-  :straight auctex
-  :config
-  (setq TeX-electric-sub-and-superscript t)
-  (setq TeX-electric-math (cons "$" "$"))
-  ;; Let PDF tools be our default viewwer
-  (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
-        TeX-source-correlate-start-server t)
-  ;; This makes PDF tools refresh after compilation :)
-  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
-  ;; Automatically close pairs for me
-  (add-hook 'LaTeX-mode-hook #'electric-pair-mode)
-  ;; Automatically break lines at the 80 char limit
-  (add-hook 'LaTeX-mode-hook #'auto-fill-mode)
-  (add-hook 'LaTeX-mode-hook #'flyspell-mode))
-
-(use-package corfu
+(use-package embark
   :straight t
-  :custom
-  (corfu-auto t)
-  :config
-  (setq-local corfu-auto-delay 0.75
-              completion-styles '(basic))
+
   :bind
-  (:map corfu-map
-        ("TAB" . corfu-next)
-        ([tab] . corfu-next)
-        ("S-TAB" . corfu-previous)
-        ([backtab] . corfu-previous))
-  :init)
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
+   ("C-c C-e" . embark-export))
 
-(use-package consult
-  :straight t)
-
-(use-package popper
-  :straight t
-  :bind (("C-`"   . popper-toggle)
-         ("M-`"   . popper-cycle))
   :init
-  (setq popper-reference-buffers
-        '("\\*Messages\\*"
-          "Output\\*$"
-          "\\*Async Shell Command\\*"
-          help-mode
-          compilation-mode))
-  (popper-mode +1)
-  (popper-echo-mode +1))
 
-(use-package org
-  :straight t
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  ;; Show the Embark target at point via Eldoc. You may adjust the
+  ;; Eldoc strategy, if you want to see the documentation from
+  ;; multiple providers. Beware that using this can be a little
+                                        ;>; jarring since the message shown in the minibuffer can be more
+  ;; than one line, causing the modeline to move up and down:
+
+  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
   :config
-  (setq org-log-done t)
-  (setq org-agenda-files (list "~/org/school/todo.org")))
 
-(use-package haskell-mode
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+;; Enable rich annotations using the Marginalia package
+(use-package marginalia
+  :straight t
+  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+  ;; available in the *Completions* buffer, add it to the
+  ;; `completion-list-mode-map'.
+  :bind (:map minibuffer-local-map
+              ("M-A" . marginalia-cycle))
+
+  ;; The :init section is always executed.
+  :init
+
+  ;; Marginalia must be activated in the :init section of use-package such that
+  ;; the mode gets enabled right away. Note that this forces loading the
+  ;; package.
+  (marginalia-mode))
+
+;; Example configuration for Consult
+(use-package consult
+  :straight t
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :bind
+  (("M-s f" . consult-fd)
+   ("M-s r" . consult-ripgrep))
+  :hook (completion-list-mode . consult-preview-at-point-mode))
+
+;; Does straight not work with this?
+;; Do I need to include the separate repo?
+(use-package embark-consult
+  :straight
+  (:host github :repo "emacs-straight/embark-consult")
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
+(use-package wgrep
   :straight t)
 
-(use-package eglot
-  :config
-  ;; Inlay hints make me lose my mind with rust analyzer
-  (setq-default eglot-inlay-hints-mode nil))
+(use-package multiple-cursors
+  :straight t
+  :bind
+  ("C->" . mc/mark-next-like-this)
+  ("C-<" . mc/mark-previous-like-this)
+  ("C-c C->" . mc/mark-all-like-this)
+  ("C-M->" . mc/skip-to-next-like-this))
 
-;; cc-mode defaults
-(setq c-default-style "stroustrup")
-(add-hook 'c++-mode-hook (lambda nil (setq c-basic-offset 4)))
+;; Please no type hints
 
-;; cmake-mode :]
-(setq load-path (cons (expand-file-name "/opt/homebrew/Cellar/cmake/3.27.4/share/emacs/site-lisp/cmake") load-path))
-(require 'cmake-mode)
+(setopt eglot-ignored-server-capabilities '(:inlayHintProvider))
+
+(with-eval-after-load "eglot"
+  (add-to-list 'eglot-stay-out-of 'flymake)
+  (add-to-list 'eglot-stay-out-of 'flycheck))
