@@ -144,9 +144,10 @@
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
   :bind
-  (("M-s f" . consult-fd)
-   ("M-s r" . consult-ripgrep)
-   ("M-s e" . consult-flymake))
+  (("M-s r" . consult-ripgrep)
+   ("M-s g" . consult-fd)
+   ("M-s e" . consult-flymake)
+   ("C-x C-b" . consult-buffer))
   :hook (completion-list-mode . consult-preview-at-point-mode))
 
 (use-package corfu
