@@ -3,17 +3,21 @@
 ;; up emacs on a new machine :)
 (defvar bootstrap-version)
 (let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	"https://radian-software.github.io/straight.el/install.el"
          'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(global-display-line-numbers-mode)
 
 ;; Get rid of top ui for more screen space.
 (tooltip-mode -1)
@@ -92,67 +96,14 @@
 ;; Let straight be the package manager for use-package :]
 (straight-use-package 'use-package)
 
-;; use setq-default to set it for /all/ modes
-(setq-default mode-line-format
-              (list
-               "λ> "
-
-               ;; the buffer name; the file name as a tool tip
-               '(:eval (propertize "%b " 'face 'font-lock-keyword-face
-                                   'help-echo (buffer-file-name)))
-
-               ;; line and column
-               "(" ;; '%02' to set to 2 chars at least; prevents flickering
-               (propertize "%02l" 'face 'font-lock-type-face) ","
-               (propertize "%02c" 'face 'font-lock-type-face)
-               ") "
-
-               ;; relative position, size of file
-               "["
-               (propertize "%p" 'face 'font-lock-constant-face) ;; % above top
-               "] "
-
-               ;; the current major mode for the buffer.
-               "["
-
-               '(:eval (propertize "%m" 'face 'font-lock-string-face
-                                   'help-echo buffer-file-coding-system))
-               "] "
-
-
-               "[" ;; insert vs overwrite mode, input-method in a tooltip
-               '(:eval (propertize (if overwrite-mode "Ovr" "Ins")
-                                   'face 'font-lock-preprocessor-face
-                                   'help-echo (concat "Buffer is in "
-                                                      (if overwrite-mode "overwrite" "insert") " mode")))
-
-               ;; was this buffer modified since the last save?
-               '(:eval (when (buffer-modified-p)
-                         (concat ","  (propertize "Mod"
-                                                  'face 'font-lock-warning-face
-                                                  'help-echo "Buffer has been modified"))))
-
-               ;; is this buffer read-only?
-               '(:eval (when buffer-read-only
-                         (concat ","  (propertize "RO"
-                                                  'face 'font-lock-type-face
-                                                  'help-echo "Buffer is read-only"))))
-               "] "
-
-               ;; add the time, with the date and the emacs uptime in the tooltip
-               '(:eval (propertize (format-time-string "%H:%M")
-                                   'help-echo
-                                   (concat (format-time-string "%c; ")
-                                           (emacs-uptime "Uptime:%hh"))))
-               ))
-
-
 ;; colorize output in compile buffer
 (require 'ansi-color)
 (defun colorize-compilation-buffer ()
   (ansi-color-apply-on-region compilation-filter-start (point-max)))
 (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 
+
+;; Custom Theme :]
 (use-package modus-themes
   :straight t
   :config
@@ -164,9 +115,6 @@
         '((bg-main "#181818")))
 
   (load-theme 'modus-vivendi-tinted t))
-
-(use-package rust-mode
-  :straight t)
 
 (use-package embark
   :straight t
@@ -226,27 +174,25 @@
    ("M-s r" . consult-ripgrep))
   :hook (completion-list-mode . consult-preview-at-point-mode))
 
-;; Does straight not work with this?
-;; Do I need to include the separate repo?
-(use-package embark-consult
-  :straight
-  (:host github :repo "emacs-straight/embark-consult")
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
-
-(use-package wgrep
-  :straight t)
-
-(use-package multiple-cursors
+(use-package direnv
   :straight t
-  :bind
-  ("C->" . mc/mark-next-like-this)
-  ("C-<" . mc/mark-previous-like-this)
-  ("C-c C->" . mc/mark-all-like-this)
-  ("C-M->" . mc/skip-to-next-like-this))
+  :config
+  (direnv-mode))
+
+
+(use-package eglot
+  :init
+  (add-hook 'go-mode-hook 'eglot-ensure)
+  :config
+
+  (add-to-list 'eglot-ignored-server-capabilites ':documentHighlightProvider)
+
+  (setq-default eglot-workspace-configuration
+                '((:gopls .
+                          ((staticcheck . t)
+                           (gofumpt . t))))))
 
 ;; Please no type hints
-
 (setopt eglot-ignored-server-capabilities '(:inlayHintProvider))
 
 (with-eval-after-load "eglot"
