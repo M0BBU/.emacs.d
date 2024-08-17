@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t -*-
+
 ;; Bootstrap straight package manager. The straight
 ;; package manager usually works better if I'm setting
 ;; up emacs on a new machine :)
@@ -24,6 +26,11 @@
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
+
+
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
+(setq indent-line-function 'insert-tab)
 
 ;; Smooth scrolling
 (pixel-scroll-precision-mode)
@@ -115,37 +122,6 @@
 
   (load-theme 'modus-vivendi-tinted t))
 
-(use-package embark
-  :straight t
-
-  :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-;" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
-   ("C-c C-e" . embark-export))
-
-  :init
-
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-
-  ;; Show the Embark target at point via Eldoc. You may adjust the
-  ;; Eldoc strategy, if you want to see the documentation from
-  ;; multiple providers. Beware that using this can be a little
-                                        ;>; jarring since the message shown in the minibuffer can be more
-  ;; than one line, causing the modeline to move up and down:
-
-  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-
-  :config
-
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
-
 ;; Enable rich annotations using the Marginalia package
 (use-package marginalia
   :straight t
@@ -169,16 +145,40 @@
   ;; relevant when you use the default completion UI.
   :bind
   (("M-s f" . consult-fd)
-   ("M-s r" . consult-ripgrep))
+   ("M-s r" . consult-ripgrep)
+   ("M-s e" . consult-flymake))
   :hook (completion-list-mode . consult-preview-at-point-mode))
+
+(use-package magit
+  :straight t)
 
 (use-package direnv
   :straight t
   :config
   (direnv-mode))
 
-(use-package go-mode
-  :straight t)
+(use-package flymake
+  :config ; (Optional) For fix bad icon display (Only for left margin)
+  (advice-add #'flymake--indicator-overlay-spec
+              :filter-return
+              (lambda (indicator)
+                (concat indicator
+                        (propertize " "
+                                    'face 'default
+                                    'display `((margin left-margin)
+                                               (space :width 5))))))
+  :custom
+  (flymake-indicator-type 'margins)
+  (flymake-margin-indicators-string
+   `((error ,(propertize "•") compilation-error)
+     (warning ,(propertize "•") compilation-warning)
+     (note ,(propertize "•") compilation-info))))
+
+
+;;;###autoload
+(add-to-list 'auto-mode-alist (cons "\\.go\\'" 'go-ts-mode))
+(add-hook 'go-ts-mode (lambda () (electric-indent-local-mode -1)))
+(setq go-ts-mode-indent-offset 4)
 
 ;; Need to tell emacs where to get the grammars
 (setq treesit-language-source-alist
@@ -193,26 +193,20 @@
         (toml "https://github.com/tree-sitter/tree-sitter-toml")
         (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 
-;;;###autoload
-;; (add-to-list 'auto-mode-alist (cons "\\.go\\'" 'go-ts-mode))
-;; (add-hook 'go-ts-mode (lambda () (electric-indent-local-mode -1)))
-
 ;; Setup LSP and Treesitter
 (use-package eglot
   :init
   (add-hook 'go-ts-mode-hook 'eglot-ensure)
   (add-hook 'go-mode-hook 'eglot-ensure)
   :config
-  (add-to-list 'eglot-ignored-server-capabilites ':documentHighlightProvider)
-  (setq-default eglot-workspace-configuration
-                '((:gopls .
-                          ((staticcheck . t)
-                           (gofumpt . t))))))
+  (add-to-list 'eglot-ignored-server-capabilites
+               ':documentHighlightProvider
+               ':inlayHintProvider ;; Please no type hints)
+               (setq-default eglot-workspace-configuration
+                             '((:gopls .
+                                       ((staticcheck . t)
+                                        (gofumpt . t)))))))
 
-
-;; Please no type hints
-(setopt eglot-ignored-server-capabilities '(:inlayHintProvider))
 
 (with-eval-after-load "eglot"
-  (add-to-list 'eglot-stay-out-of 'flymake)
   (add-to-list 'eglot-stay-out-of 'flycheck))
