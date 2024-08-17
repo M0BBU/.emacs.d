@@ -11,7 +11,7 @@
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
-	"https://radian-software.github.io/straight.el/install.el"
+	     "https://radian-software.github.io/straight.el/install.el"
          'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
@@ -102,7 +102,6 @@
   (ansi-color-apply-on-region compilation-filter-start (point-max)))
 (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 
-
 ;; Custom Theme :]
 (use-package modus-themes
   :straight t
@@ -164,7 +163,6 @@
   ;; package.
   (marginalia-mode))
 
-;; Example configuration for Consult
 (use-package consult
   :straight t
   ;; Enable automatic preview at point in the *Completions* buffer. This is
@@ -179,18 +177,38 @@
   :config
   (direnv-mode))
 
+(use-package go-mode
+  :straight t)
 
+;; Need to tell emacs where to get the grammars
+(setq treesit-language-source-alist
+      '((go "https://github.com/tree-sitter/tree-sitter-go" "v0.20.0")
+        (starlark "https://github.com/tree-sitter-grammars/tree-sitter-starlark.git" "v1.1.0")
+        (bash "https://github.com/tree-sitter/tree-sitter-bash")
+        (cmake "https://github.com/uyha/tree-sitter-cmake")
+        (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+        (json "https://github.com/tree-sitter/tree-sitter-json")
+        (make "https://github.com/alemuller/tree-sitter-make")
+        (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+        (toml "https://github.com/tree-sitter/tree-sitter-toml")
+        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+
+;;;###autoload
+;; (add-to-list 'auto-mode-alist (cons "\\.go\\'" 'go-ts-mode))
+;; (add-hook 'go-ts-mode (lambda () (electric-indent-local-mode -1)))
+
+;; Setup LSP and Treesitter
 (use-package eglot
   :init
+  (add-hook 'go-ts-mode-hook 'eglot-ensure)
   (add-hook 'go-mode-hook 'eglot-ensure)
   :config
-
   (add-to-list 'eglot-ignored-server-capabilites ':documentHighlightProvider)
-
   (setq-default eglot-workspace-configuration
                 '((:gopls .
                           ((staticcheck . t)
                            (gofumpt . t))))))
+
 
 ;; Please no type hints
 (setopt eglot-ignored-server-capabilities '(:inlayHintProvider))
