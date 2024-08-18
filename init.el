@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t -*-
+;; -*- mode: emacs-lisp; lexical-binding: t -*-
 
 ;; Bootstrap straight package manager. The straight
 ;; package manager usually works better if I'm setting
@@ -245,7 +245,6 @@
                              '((:gopls .
                                        ((staticcheck . t)
                                         (gofumpt . t)))))))
-
 
 (with-eval-after-load "eglot"
   (add-to-list 'eglot-stay-out-of 'flycheck))
