@@ -226,6 +226,7 @@
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist (cons "\\.go\\'" 'go-ts-mode))
+(add-to-list 'auto-mode-alist (cons "\\.rs\\'" 'rust-ts-mode))
 (add-hook 'go-ts-mode (lambda () (electric-indent-local-mode -1)))
 (setq go-ts-mode-indent-offset 4)
 
@@ -233,6 +234,7 @@
 (setq treesit-language-source-alist
       '((go "https://github.com/tree-sitter/tree-sitter-go" "v0.20.0")
         (starlark "https://github.com/tree-sitter-grammars/tree-sitter-starlark.git" "v1.1.0")
+        (rust "https://github.com/tree-sitter/tree-sitter-rust" "v0.21.2")
         (bash "https://github.com/tree-sitter/tree-sitter-bash")
         (cmake "https://github.com/uyha/tree-sitter-cmake")
         (elisp "https://github.com/Wilfred/tree-sitter-elisp")
