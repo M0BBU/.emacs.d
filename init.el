@@ -19,14 +19,16 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+;; Line numbers
 (global-display-line-numbers-mode)
+;; Ensure files are always updated after git
+(global-auto-revert-mode t)
 
 ;; Get rid of top ui for more screen space.
 (tooltip-mode -1)
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
-
 
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
@@ -118,7 +120,9 @@
           (border-mode-line-inactive unspecified)))
 
   (setq modus-vivendi-tinted-palette-overrides
-        '((bg-main "#181818")))
+        '((bg-main "#181818")
+          (fringe "#181818")
+          (bg-line-number-inactive unspecified "#181818")))
 
   (load-theme 'modus-vivendi-tinted t))
 
@@ -139,13 +143,19 @@
   ;; package.
   (marginalia-mode))
 
+(use-package orderless
+  :straight t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+
 (use-package consult
   :straight t
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
   :bind
   (("M-s r" . consult-ripgrep)
-   ("M-s g" . consult-fd)
+   ("M-s f" . consult-fd)
    ("M-s e" . consult-flymake)
    ("C-x C-b" . consult-buffer))
   :hook (completion-list-mode . consult-preview-at-point-mode))
@@ -154,7 +164,7 @@
   :straight t
   ;; Optional customizations
   :custom
-  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-cycle t)               ;; Enable cycling for `corfu-next/previous'
   ;; (corfu-separator ?\s)          ;; Orderless field separator
   ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
   ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
@@ -240,11 +250,7 @@
   :config
   (add-to-list 'eglot-ignored-server-capabilites
                ':documentHighlightProvider
-               ':inlayHintProvider ;; Please no type hints)
-               (setq-default eglot-workspace-configuration
-                             '((:gopls .
-                                       ((staticcheck . t)
-                                        (gofumpt . t)))))))
+               ':inlayHintProvider))
 
 (with-eval-after-load "eglot"
   (add-to-list 'eglot-stay-out-of 'flycheck))
