@@ -199,7 +199,10 @@
 ;;  (remove-hook 'magit-status-sections-hook 'magit-insert-unpushed-to-pushremote)
 ;;  (remove-hook 'magit-status-sections-hook 'magit-insert-unpulled-from-pushremote)
   (remove-hook 'magit-status-sections-hook 'magit-insert-unpulled-from-upstream)
-  (remove-hook 'magit-status-sections-hook 'magit-insert-unpushed-to-upstream-or-recent))
+  (remove-hook 'magit-status-sections-hook 'magit-insert-unpushed-to-upstream-or-recent)
+  :bind
+  (("C-c v b" . magit-blame)))
+
 
 (use-package direnv
   :straight t
