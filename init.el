@@ -201,7 +201,9 @@
   (remove-hook 'magit-status-sections-hook 'magit-insert-unpulled-from-upstream)
   (remove-hook 'magit-status-sections-hook 'magit-insert-unpushed-to-upstream-or-recent)
   :bind
-  (("C-c v b" . magit-blame)))
+  (("C-c v b" . magit-blame)
+   ("C-c v c" . magit-branch)
+   ("C-c v r" . magit-rebase)))
 
 
 (use-package direnv
@@ -226,6 +228,7 @@
      (warning ,(propertize "•") compilation-warning)
      (note ,(propertize "•") compilation-info))))
 
+(add-to-list 'load-path "~/.emacs.d/lisp")
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist (cons "\\.go\\'" 'go-ts-mode))
@@ -257,5 +260,5 @@
                ':documentHighlightProvider
                ':inlayHintProvider))
 
-(with-eval-after-load "eglot"
-  (add-to-list 'eglot-stay-out-of 'flycheck))
+;; (with-eval-after-load "eglot"
+;;   (add-to-list 'eglot-stay-out-of 'flycheck))
