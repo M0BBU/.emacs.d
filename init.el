@@ -1,120 +1,97 @@
 ;; -*- mode: emacs-lisp; lexical-binding: t -*-
 
-;; Bootstrap straight package manager. The straight
-;; package manager usually works better if I'm setting
-;; up emacs on a new machine :)
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
-      (bootstrap-version 7))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-	     "https://radian-software.github.io/straight.el/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+;; Install use-package support.
+(elpaca elpaca-use-package
+  ;; Enable use-package :ensure support for Elpaca.
+  (elpaca-use-package-mode))
 
-;; Line numbers
-(global-display-line-numbers-mode)
-;; Ensure files are always updated after git
-(global-auto-revert-mode t)
-
-;; Get rid of top ui for more screen space.
-(tooltip-mode -1)
-(tool-bar-mode -1)
-(menu-bar-mode -1)
-(scroll-bar-mode -1)
-
-(setq-default indent-tabs-mode nil)
-(setq-default tab-width 4)
-(setq indent-line-function 'insert-tab)
-
-;; Smooth scrolling
-(pixel-scroll-precision-mode)
-
-;; Sets M-o to switch windows
-(global-set-key "\M-o" 'other-window)
-
-(column-number-mode)
-(display-time-mode)
-
-;; Some nice defaults
-(setq
- ;; No GNU message.
- inhibit-startup-message t
- ;; No welcome message.
- inhibit-splash-screen t
- ;; No reminder for scratch buffer.
- initial-scratch-message nil
- ;; No dings!
- ring-bell-function 'ignore
- ;; Let C-k delete the whole line.
- kill-whole-line t
- ;; Search is case sensitive.
- case-fold-search nil
- ;; I dunno how to fix the warnings with native-comp :]
- native-comp-async-report-warnings-errors 'silent
- ;; Command == Meta to save my fingers.
- mac-command-modifier 'meta
- ;; Make opt key do Super.
- mac-option-modifier 'super)
-
-;; Maximize window on startup!
-(add-hook 'window-setup-hook 'toggle-frame-maximized t)
-
-;; Lets you highlight and delete
-(delete-selection-mode t)
-
-;; Accept `y` or `n` instead of yes or no.
-(defalias 'yes-or-no-p 'y-or-n-p)
-
-;; Don't mix tabs and spaces! The setq-default is needed because this becomes
-;; a buffer-local variable when set (I believe).
-(setq-default indent-tabs-mode nil)
-;; I like 4-char indents :]
-(setq-default tab-width 4)
-
-;; Scrolls one line without moving cursor
-(global-set-key (kbd "M-n") #'scroll-up-line)
-(global-set-key (kbd "M-p") #'scroll-down-line)
-
-;; Get rid of trailing whitespace
-(add-hook 'before-save-hook #'delete-trailing-whitespace)
-(setq require-final-newline t)
-
-;; Ido and fido-vertical is pretty nice
-(setq ido-enable-flex-matching t)
-(setq ido-everywhere t)
-(ido-mode 1)
-(fido-vertical-mode t)
-
-;; Control font size?
-(set-face-attribute 'default nil :height 170)
-
-;; Get rid of backups and autosaves
-(setq
- make-backup-files nil
- auto-save-default nil
- create-lockfiles nil)
-
-;; Let straight be the package manager for use-package :]
-(straight-use-package 'use-package)
-
-;; colorize output in compile buffer
-(require 'ansi-color)
-(defun colorize-compilation-buffer ()
-  (ansi-color-apply-on-region compilation-filter-start (point-max)))
-(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
-
-;; Custom Theme :]
-(use-package modus-themes
-  :straight t
+(use-package emacs
   :config
+  ;; Some nice defaults.
+  (setq
+   ;; No GNU message.
+   inhibit-startup-message t
+   ;; No welcome message.
+   inhibit-splash-screen t
+   ;; No reminder for scratch buffer.
+   initial-scratch-message nil
+   ;; No dings!
+   ring-bell-function 'ignore
+   ;; Let C-k delete the whole line.
+   kill-whole-line t
+   ;; Search is case sensitive.
+   case-fold-search nil
+   ;; I dunno how to fix the warnings with native-comp :]
+   native-comp-async-report-warnings-errors 'silent
+   ;; Sets CMD to Meta on Mac. Saves my fingers.
+   mac-command-modifier 'meta)
+
+  ;; 80 character line limit
+  (setopt display-fill-column-indicator-column 80)
+  (global-display-fill-column-indicator-mode)
+
+  ;; Line numbers
+  (global-display-line-numbers-mode)
+  ;; Ensure files are always updated after git
+  (global-auto-revert-mode t)
+
+  ;; Get rid of top ui for more screen space.
+  (tooltip-mode -1)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+
+  ;; Default indentation.
+  (setq-default indent-tabs-mode nil)
+  (setq-default tab-width 4)
+  (setq indent-line-function 'insert-tab)
+  ;; Don't mix tabs and spaces. The setq-default is needed because this becomes
+  ;; a buffer-local variable when set (I believe).
+  (setq-default indent-tabs-mode nil)
+  ;; I like 4-char indents :)
+  (setq-default tab-width 4)
+
+  ;; Smooth scrolling.
+  (pixel-scroll-precision-mode)
+
+  ;; Sets M-o to switch windows.
+  (global-set-key "\M-o" 'other-window)
+
+  ;; Mode line luxuries.
+  (column-number-mode)
+  (display-time-mode)
+
+  ;; Maximize window on startup.
+  (add-hook 'window-setup-hook 'toggle-frame-maximized t)
+
+  ;; Lets you highlight and delete.
+  (delete-selection-mode t)
+
+  ;; Accept `y` or `n` instead of yes or no.
+  (defalias 'yes-or-no-p 'y-or-n-p)
+
+  ;; Scrolls one line without moving cursor.
+  (global-set-key (kbd "M-n") #'scroll-up-line)
+  (global-set-key (kbd "M-p") #'scroll-down-line)
+  (keymap-global-set "C-c C-c" #'compile)
+
+  (setq compilation-scroll-output t)
+
+  ;; Get rid of trailing whitespace.
+  (add-hook 'before-save-hook #'delete-trailing-whitespace)
+  (setq require-final-newline t)
+
+  ;; Control font size?
+  (set-face-attribute 'default nil :height 180)
+  (set-frame-font "Comic Mono" nil t)
+
+  ;; Get rid of backups and autosaves.
+  (setq
+   make-backup-files nil
+   auto-save-default nil
+   create-lockfiles nil)
+
+;;   ;; Custom theme.
   (setq modus-themes-common-palette-overrides
         '((border-mode-line-active unspecified)
           (border-mode-line-inactive unspecified)))
@@ -123,151 +100,178 @@
         '((bg-main "#181818")
           (fringe "#181818")
           (bg-line-number-inactive unspecified "#181818")))
-
   (load-theme 'modus-vivendi-tinted t))
 
-;; Enable rich annotations using the Marginalia package
-(use-package marginalia
-  :straight t
-  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
-  ;; available in the *Completions* buffer, add it to the
-  ;; `completion-list-mode-map'.
-  :bind (:map minibuffer-local-map
-              ("M-A" . marginalia-cycle))
+(use-package ansi-color
+  :config
+  (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter))
 
-  ;; The :init section is always executed.
+;; Enable Vertico.
+(use-package vertico
+  :ensure
+  ;; custom:
+  ;; (vertico-scroll-margin 0) ;; Different scroll margin
+  ;; (vertico-count 20) ;; Show more candidates
+  ;; (vertico-resize t) ;; Grow and shrink the Vertico minibuffer
+  ;; (vertico-cycle t) ;; Enable cycling for `vertico-next/previous'
   :init
+  (vertico-mode))
 
-  ;; Marginalia must be activated in the :init section of use-package such that
-  ;; the mode gets enabled right away. Note that this forces loading the
-  ;; package.
-  (marginalia-mode))
+;; Configure directory extension.
+(use-package vertico-directory
+  :after vertico
+  :ensure nil
+  ;; More convenient directory navigation commands
+  :bind (:map vertico-map
+              ("RET" . vertico-directory-enter)
+              ("DEL" . vertico-directory-delete-char)
+              ("M-DEL" . vertico-directory-delete-word))
+  ;; Tidy shadowed file names
+  :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
 
 (use-package orderless
-  :straight t
+  :ensure
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
+;; Example configuration for Consult
 (use-package consult
-  :straight t
+  :ensure
+  ;; Replace bindings. Lazily loaded by `use-package'.
+  :bind (;; C-c bindings in `mode-specific-map'
+         ("C-c M-x" . consult-mode-command)
+         ("C-c h" . consult-history)
+         ("C-c k" . consult-kmacro)
+         ("C-c m" . consult-man)
+         ("C-c i" . consult-info)
+         ([remap Info-search] . consult-info)
+         ;; C-x bindings in `ctl-x-map'
+         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ("C-x t b" . consult-buffer-other-tab)    ;; orig. switch-to-buffer-other-tab
+         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+         ;; Custom M-# bindings for fast register access
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ;; Other custom bindings
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ;; M-g bindings in `goto-map'
+         ("M-g e" . consult-compile-error)
+         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+         ("M-g g" . consult-goto-line)             ;; orig. goto-line
+         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ;; M-s bindings in `search-map'
+         ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+         ("M-s c" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
+         ;; Isearch integration
+         ("M-s e" . consult-isearch-history)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+         ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+         ;; Minibuffer history
+         :map minibuffer-local-map
+         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
-  :bind
-  (("M-s r" . consult-ripgrep)
-   ("M-s f" . consult-fd)
-   ("M-s e" . consult-flymake)
-   ("C-x C-b" . consult-buffer))
-  :hook (completion-list-mode . consult-preview-at-point-mode))
+  :hook (completion-list-mode . consult-preview-at-point-mode)
 
-(use-package corfu
-  :straight t
-  ;; Optional customizations
-  :custom
-  (corfu-cycle t)               ;; Enable cycling for `corfu-next/previous'
-  ;; (corfu-separator ?\s)          ;; Orderless field separator
-  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
-
-  ;; Enable Corfu only for certain modes. See also `global-corfu-modes'.
-  ;; :hook ((prog-mode . corfu-mode)
-  ;;        (shell-mode . corfu-mode)
-  ;;        (eshell-mode . corfu-mode))
-
-  ;; Recommended: Enable Corfu globally.  This is recommended since Dabbrev can
-  ;; be used globally (M-/).  See also the customization variable
-  ;; `global-corfu-modes' to exclude certain modes.
-  :bind
-  (:map corfu-map
-        ("TAB" . corfu-next)
-        ([tab] . corfu-next)
-        ("S-TAB" . corfu-previous)
-        ([backtab] . corfu-previous))
+  ;; The :init configuration is always executed (Not lazy)
   :init
-  (global-corfu-mode))
 
+  ;; Tweak the register preview for `consult-register-load',
+  ;; `consult-register-store' and the built-in commands.  This improves the
+  ;; register formatting, adds thin separator lines, register sorting and hides
+  ;; the window mode line.
+  (advice-add #'register-preview :override #'consult-register-window)
+  (setq register-preview-delay 0.5)
 
-(use-package magit
-  :straight t
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
   :config
-  (remove-hook 'magit-status-sections-hook 'magit-insert-tags-header)
-  (remove-hook 'magit-status-sections-hook 'magit-insert-status-headers)
-;;  (remove-hook 'magit-status-sections-hook 'magit-insert-unpushed-to-pushremote)
-;;  (remove-hook 'magit-status-sections-hook 'magit-insert-unpulled-from-pushremote)
-  (remove-hook 'magit-status-sections-hook 'magit-insert-unpulled-from-upstream)
-  (remove-hook 'magit-status-sections-hook 'magit-insert-unpushed-to-upstream-or-recent)
-  :bind
-  (("C-c v b" . magit-blame)
-   ("C-c v c" . magit-branch)
-   ("C-c v r" . magit-rebase)))
 
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key "M-.")
+  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep consult-man
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; "C-+"
+
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
+)
+
+(use-package wgrep
+  :ensure)
 
 (use-package direnv
-  :straight t
+  :ensure
   :config
   (direnv-mode))
 
-;; This is for displaying errors from LSP and such
-(use-package flymake
-  :config ; (Optional) For fix bad icon display (Only for left margin)
-  (advice-add #'flymake--indicator-overlay-spec
-              :filter-return
-              (lambda (indicator)
-                (concat indicator
-                        (propertize " "
-                                    'face 'default
-                                    'display `((margin left-margin)
-                                               (space :width 5))))))
-  :custom
-  (flymake-indicator-type 'margins)
-  (flymake-margin-indicators-string
-   `((error ,(propertize "•") compilation-error)
-     (warning ,(propertize "•") compilation-warning)
-     (note ,(propertize "•") compilation-info))))
-
-(add-to-list 'load-path "~/.emacs.d/lisp")
+(use-package bazel
+  :ensure (bazel-mode :type git :host github :repo "bazelbuild/emacs-bazel-mode"))
 
 (use-package c-ts-mode
   :custom
-  ;; 2 space indentation makes me want to die
+  ;; 2 space indentation makes me want to die.
   (c-ts-mode-indent-offset 4)
   (c-ts-mode-indent-style 'linux)
-  ;; Override the default c/c++ modes that emacs comes with :]
+  ;; Override the default c/c++ modes that emacs comes with.
   (add-to-list 'major-mode-remap-alist '(c-mode . c-ts-mode))
   (add-to-list 'major-mode-remap-alist '(c++-mode . c++-ts-mode))
   (add-to-list 'major-mode-remap-alist
                '(c-or-c++-mode . c-or-c++-ts-mode)))
 
-;; Setup LSP and Treesitter
-(use-package eglot
-  :init
-  (add-hook 'go-ts-mode-hook 'eglot-ensure)
-  (add-hook 'go-mode-hook 'eglot-ensure)
-  :config
-  (add-to-list 'eglot-ignored-server-capabilites
-               ':documentHighlightProvider
-               ':inlayHintProvider)
-  ;; :bind
-  ;;(("M-," . eglot-rename))
-  )
-
-(with-eval-after-load "eglot"
-  (add-to-list 'eglot-stay-out-of 'flycheck))
->>>>>>> 9d0d4b5 (c/c++ ts mode)
-
 ;;;###autoload
 (add-to-list 'auto-mode-alist (cons "\\.go\\'" 'go-ts-mode))
-(add-to-list 'auto-mode-alist (cons "\\.rs\\'" 'rust-ts-mode))
+(add-to-list 'auto-mode-alist (cons "\\.star\\'" 'bazel-mode))
+(add-to-list 'auto-mode-alist (cons "\\.bazel\\'" 'bazel-mode))
 (add-hook 'go-ts-mode (lambda () (electric-indent-local-mode -1)))
 (setq go-ts-mode-indent-offset 4)
 
 ;; Need to tell emacs where to get the grammars
 (setq treesit-language-source-alist
       '((go "https://github.com/tree-sitter/tree-sitter-go" "v0.20.0")
+        (gomod "https://github.com/camdencheek/tree-sitter-go-mod" "v1.1.0")
         (starlark "https://github.com/tree-sitter-grammars/tree-sitter-starlark.git" "v1.1.0")
         (rust "https://github.com/tree-sitter/tree-sitter-rust" "v0.21.2")
         (cpp "https://github.com/tree-sitter/tree-sitter-cpp" "v0.22.0" "src")

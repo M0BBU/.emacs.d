@@ -5,3 +5,10 @@ straight
 tree-sitter
 projects
 transient
+elpa/
+elpaca/
+init3.el
+recentf
+tramp
+.lsp-session-v1
+
